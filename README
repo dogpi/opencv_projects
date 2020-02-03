@@ -1,0 +1,76 @@
+INCLUDEPATH += /usr/local/include \
+               /usr/local/include/opencv4 \
+               /usr/local/include/opencv4/opencv2
+
+LIBS += /usr/local/lib/libopencv_highgui.so \
+        /usr/local/lib/libopencv_core.so    \
+        /usr/local/lib/libopencv_imgproc.so \
+        /usr/local/lib/libopencv_imgcodecs.so \
+        /usr/local/lib/*.so
+
+opencv_001:
+	掩膜操作（提高对比度）
+		手动掩膜
+		使用fliter2D进行掩膜操作
+	总结：filter2D效率更高。
+opencv_002:
+	Mat相关操作：
+		拷贝，复制，Scalar，指针操作，色域转换，定义小矩阵
+opencv_003:
+	对像素点进行操作
+opencv_004:
+	addWeighted图像融合
+opencv_005:
+	对每个像素点进行修改，提高图像的亮度，或降低图像的亮度。
+Opencv_006:
+	基本几何形状绘制，文字显示
+opencv_007:
+	blur均值模糊（滤波）：取所有像素的平均值赋值给当前像素
+	GaussianBlur高斯模糊（滤波）：均值滤波的kernel值为
+			[1,1,1]
+			[1,1,1]
+			[1,1,1]
+			        高斯滤波的kernel值为
+			x = -2 w = 0.05
+			x = -1 w = 0.15
+			x = 0  w = 0.6
+			x = 1  w = 0.15
+			x = 2  w = 0.05
+opencv_008:
+	medianBlur中值滤波：对椒盐噪声有很好的抑制作用
+			对kernel覆盖的像素进行排序，把中间值赋值给中间像素，就会去除小的干扰
+	bilateralFilter双边滤波 ：保留图像梯度（轮廓），当有边界时中心的像素值很大，周围的像素值很小，可能会覆盖掉像素的边界特征。双边滤波可以设置阈值，当超过阈值后，就保留当前的像素值，否则就进行高斯滤波。 
+Opencv_009:
+	Mat kernel = getStructuringElement(int shape,Size ksize,Point anchor);
+	腐蚀：数值小的像素取代数值大的像素（暗的像素变多）
+	膨胀：数值大的像素取代数值小的像素（亮的像素变多）
+opencv_010:
+	形态学操作：
+		膨胀，腐蚀
+		形态学梯度（膨胀-腐蚀）
+		开操作（先腐蚀后膨胀：去除小亮点）：先腐蚀去除小的亮点，大的要保留的亮色图像也会被深色覆盖部分，膨胀操作会使面积变小的亮色恢复原有大小。
+		闭操作（先膨胀后腐蚀：去除小黑点）、
+		顶帽（开操作-原图像）
+		黑帽（闭操作-原图像）
+opencv_011:
+	形态学操作，提取水平与垂直线
+	1、读取图像
+	2、转为灰度图像
+	3、转为二值图像（将要提取的线设置为前景色白色，背景为黑色）
+	4、创建水平提取算子kernel_h，创建垂直提取算子kernel_v
+	5、先腐蚀，后膨胀，或直接使用morphologyEx进行开操作。
+Opencv_012:
+	上采样和降采样
+	高斯不同（DOG）：对一个图像进行一次高斯滤波，得到g1，再对g1进行高斯滤波得到	g2，g1-g2结果就是DOG。subtract(g1,g2,output_image,Mat());
+opencv_013:
+	基本阈值操作
+	阈值类型：
+		5种阈值处理方法
+		1、THRESH_BINARY阈值二值化
+		2、THRESH_BINARY_INY阈值反二值化
+		3、THRESH_TRUNC截断（超过阈值的设为阈值，没超过的保持不变）
+		4、THRESH_TOZERO阈值取零（超过阈值的保持不变，没超过阈值的取0）
+		5、THRESH_TOZERO_INV（超过阈值的取0，没超过阈值的保持不变）	
+		2种阈值寻找方法
+		THRESH_OTSU 自动寻找合适的阈值（不用手动设置阈值）
+		THRESH_TRIANGLE反二值化阈值

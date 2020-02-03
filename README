@@ -22,7 +22,7 @@ opencv_004:
 	addWeighted图像融合
 opencv_005:
 	对每个像素点进行修改，提高图像的亮度，或降低图像的亮度。
-Opencv_006:
+opencv_006:
 	基本几何形状绘制，文字显示
 opencv_007:
 	blur均值模糊（滤波）：取所有像素的平均值赋值给当前像素
@@ -40,7 +40,7 @@ opencv_008:
 	medianBlur中值滤波：对椒盐噪声有很好的抑制作用
 			对kernel覆盖的像素进行排序，把中间值赋值给中间像素，就会去除小的干扰
 	bilateralFilter双边滤波 ：保留图像梯度（轮廓），当有边界时中心的像素值很大，周围的像素值很小，可能会覆盖掉像素的边界特征。双边滤波可以设置阈值，当超过阈值后，就保留当前的像素值，否则就进行高斯滤波。 
-Opencv_009:
+opencv_009:
 	Mat kernel = getStructuringElement(int shape,Size ksize,Point anchor);
 	腐蚀：数值小的像素取代数值大的像素（暗的像素变多）
 	膨胀：数值大的像素取代数值小的像素（亮的像素变多）
@@ -59,7 +59,7 @@ opencv_011:
 	3、转为二值图像（将要提取的线设置为前景色白色，背景为黑色）
 	4、创建水平提取算子kernel_h，创建垂直提取算子kernel_v
 	5、先腐蚀，后膨胀，或直接使用morphologyEx进行开操作。
-Opencv_012:
+opencv_012:
 	上采样和降采样
 	高斯不同（DOG）：对一个图像进行一次高斯滤波，得到g1，再对g1进行高斯滤波得到	g2，g1-g2结果就是DOG。subtract(g1,g2,output_image,Mat());
 opencv_013:
@@ -72,5 +72,112 @@ opencv_013:
 		4、THRESH_TOZERO阈值取零（超过阈值的保持不变，没超过阈值的取0）
 		5、THRESH_TOZERO_INV（超过阈值的取0，没超过阈值的保持不变）	
 		2种阈值寻找方法
-		THRESH_OTSU 自动寻找合适的阈值（不用手动设置阈值）
+		THRESH_OTSU 自动寻找合适的阈值，设置的阈值不再起作用（不用手动设置阈值）
+		用法：用|或运算符与5种方法中的一种配合使用
 		THRESH_TRIANGLE反二值化阈值
+opencv_014:
+	自定义线性滤波：
+		kernel中心位置就是锚点
+		卷积如何工作：把kernel放到像素数组上，求锚点周围覆盖的像素乘积之和（包括锚点），用来替换锚点覆盖下的像素的值，称为卷积处理。    
+		                                                                                       
+		常见算子：
+		Robert算子：
+		[+1,  0
+		    0,-1]
+		[  0,+1
+		  -1,  0]
+		Sonel算子：
+		[-1,0,1
+		 -2,0,2
+		 -1,0,1]
+		[-1,-2,-1
+		   0, 0, 0
+		   1, 2, 1]
+		拉普拉斯算子：
+		[ 0,-1, 0
+		 -1, 4,-1
+		   0,-1,0]
+		Sobel算子和拉普拉斯算子用来寻找图像的梯度和边缘。
+opencv_015:
+	处理边缘：
+		BORDER_CONSTANT：填充边缘用指定像素值
+		BORDER_REPLICATE：填充边缘像素用已知的边缘值
+		BORDER_WRAP：用另外一边的像素值来补偿填充
+	给图像添加边缘：
+		copyMakeBorder(Mat src,Mat dst,int top,int bottom,int left,int right,int borderTpe,Scalar value)
+		卷积操作的函数可以指定边缘填充的类型：
+			GaussianBlur(src,dst,Size(3,3),0,0,BORDER_WRAP);
+opencv_016:
+	卷积应用：图像边缘提取，计算图像像素的分布，求一阶导数，导数最大的地方就是边缘。
+	图像边缘提取：
+		边缘是什么——是像素值发生跃迁的地方，是图像的显著特征之一，在图像特征提取、对象检测、模式识别等方面都有重要的作用。
+		如何捕捉/提取边缘——对图像求一阶导数delta=f(x)-f(x-1)，delta越大，说明像素在X方向上变化越大，边缘信号越强。
+	Sobel算子提取边缘：
+		水平梯度：Gx = kernel_x*I
+		垂直梯度：Gy = kernel_y*I
+		最终梯度：
+				G = Square(Gx2+Gy2) ===>L1
+				G = |Gx| + |Gy|            ===>L2  近似求解，速度快
+		Sobel(
+			inputArray Src,
+			outputArray dst,
+			int depth,		// 图像深度，-1会自动设置
+			int dx,			// x方向求导的阶数
+			int dy,			// y方向求导的阶数
+			int ksize,		// kernel的大小，必须是奇数。
+			double scale = 1,	
+			double delta = 0,
+			int borderType = BORDE_DEFAULT
+		)
+	Laplance算子二阶求导获取图像边缘：
+		一阶导数的极大值点是边界，在二阶导数中过0点。
+		1、高斯模糊去噪声
+		2、转换为灰度图像
+		3、拉普拉斯二阶导数计算
+		4、取绝对值
+		5、显示结果
+opencv_017:
+
+	Canny边缘检测：
+		算法介绍：共五步
+			1、高斯模糊 GaussianBlur
+			2、灰度转换 cvtColor
+			3、计算梯度 Sobel/Scharr
+			4、非最大信号抑制：根据比较方向比较当前像素与左右或上下元素的值，如果该值是最大值则保留，不是最大值则置0；
+			5、高低阈值输出二值图像：T1，T2为阈值，凡是高于T1的都保留，凡是小于T2的都丢弃。从高于T1的像素出发，凡是大于T2而且相互连接的，都保留。最终输出二值图像。推荐高低阈值比为T1：T2 = 3:1 / 2:1,其中T1为高阈值，T2为低阈值。
+		Canny(
+			inputArray src,		// 输入8-bit图像（0-255）也就是灰度图像
+			outputArray dst,		//输出边缘图像，一般为二值图像，背景是黑色
+			double threshold1,		//低阈值
+			double threshold2,		//高阈值（低阈值大2倍或3倍）
+			int aptertureSize,		//Sobel算子的Size，通常是3*3，取值3
+			bool L2gradient		// 选择true表示是L2来归一化，否则使用L1归一化
+		)
+opencv_018:
+	霍夫变换——直线检测：
+		对于所有给出的点，投影到极坐标上，r = xcosɵ+ysinɵ，根据不同的角度，可以得到一条曲线。每个点都能得到一条曲线，如果多个点投影的曲线交于一点，说明这些点在同一条直线上，根据ɵ，r可以推算出直线的位置。
+	对于任意一条直线上的点来说，变换到极坐标中，从[0,360]空间，可以得到r的大小。属于同一条直线上的点在极坐标(r,ɵ)必然在一点上有最强的信号出现，根据此反算到平面坐标中就可以得到直线上各点的像素坐标。从而得到直线。
+	如果把图像转换成二值图像，前景色为白色，投影到极坐标上，最白的点就是最强信号，在同一直线上的点的累加。
+	HoughLines(
+		inputArray src,
+		outputArray lines,
+		double rho,		//生层极坐标时，像素扫描的步长
+		double theta,		//生成极坐标时，角度步长，一般取CV_PI/180.0
+		int threshold,		//阈值，当点数超过该值时才被看做是直线
+		…...
+	) 输出（r,ɵ）
+	HoughLinesP()输出直线（x0,y0,x1,y1）
+
+	霍夫变换——圆检测：
+		对一个像素点，根据r和 ɵ，逐步增加，多个相同大小的圆交于一点，说明这些像素在同于个圆上，交点就是圆的圆心
+		HoughCircles(
+			inputArray image,	// 8位灰度图像
+			outputArray circles,	//输出发现结果
+			int method,		// 方法-HOUGH_GRADIENT
+			double dp,		// 1
+			double mindist,	//10 最短距离-可以分辨是两个圆，否则认为是同心圆
+			double param1,	//
+			double param2,	//中心点累加阈值
+			int minradius,		//最小半径
+			int maxradius		//最大半径
+		)

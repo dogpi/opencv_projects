@@ -218,4 +218,91 @@ void update_map(){
         }
     }
 }
+opencv_020:
+	直方图：对图像中的像素值进行统计，显示成直方图。
+		直方图反应了图像灰度分布情况，是图像的统计学特征。
+	直方图均衡化：是一种提高图像对比度的方法
+			使用remap将图像灰度从一个分布映射到另一个分布。
+			equalizeHist(src,dst);//输入为8位的单通道图像。
+opencv_021:
+	直方图计算：
+		dims表示维度，对灰度图像来说只有一个通道，dims=1
+		bins 表示在维度中子区域大小划分，bins=256，划分为256个级别
+		range表示值的阈值，灰度值范围为[0,255]之间
+	
+	把多通道图像分为多个单通道图像,都是灰度图像，但灰度的值对应的是每个通道原有值的大小	
+	split(
+		const Mat& src,	// 输入图像
+		Mat * mvbegin	// 输出图像数组
+	)
+	calcHist(
+		const Mat* images,	// 输入图像指针
+		int images,		//图像数目
+		const int *channels, 	// 通道数
+		inputArray mask,	// 输入mask，可选
+		outputArray hist,	// 输出直方图数据
+		int dims,		// 维数
+		const int * histsize,	// 直方图级数
+		const float* range,	// 值域范围
+		bool uniform,		// true by default
+		bool accumulate	// false by default
+	)
+	cvRound(float/double/int);//将浮点数四舍五入到最接近的整数
+	
+	normalize：
+	
+void cv::normalize 
+(
+InputArray src, 
+InputOutputArray dst, 
+double alpha = 1, 
+double beta = 0, 
+int norm_type = NORM_L2, 
+int dtype = -1, 
+InputArray mask = noArray() 
+)
+
+
+Python:dst=cv.normalize(src, dst[, alpha[, beta[, norm_type[, dtype[, mask]]]]])
+
+#include <opencv2/core.hpp>
+Normalizes the norm or value range of an array. 
+The function cv::normalize normalizes scale and shift the input array elements so that 
+∥dst∥Lp=alpha
+(where p=Inf, 1 or 2) when normType=NORM_INF, NORM_L1, or NORM_L2, respectively; or so that 
+minIdst(I)=alpha,maxIdst(I)=beta
+when normType=NORM_MINMAX (for dense arrays only). The optional mask specifies a sub-array to be normalized. This means that the norm or min-n-max are calculated over the sub-array, and then this sub-array is modified to be normalized. If you want to only use the mask to calculate the norm or min-max but modify the whole array, you can use norm and Mat::convertTo.
+In case of sparse matrices, only the non-zero values are analyzed and transformed. Because of this, the range transformation for sparse matrices is not allowed since it can shift the zero level.
+Possible usage with some positive example data: 
+vector<double> positiveData = { 2.0, 8.0, 10.0 };
+vector<double> normalizedData_l1, normalizedData_l2, normalizedData_inf, normalizedData_minmax;
+// Norm to probability (total count)
+// sum(numbers) = 20.0
+// 2.0 0.1 (2.0/20.0)
+// 8.0 0.4 (8.0/20.0)
+// 10.0 0.5 (10.0/20.0)
+normalize(positiveData, normalizedData_l1, 1.0, 0.0, NORM_L1);
+// Norm to unit vector: ||positiveData|| = 1.0
+// 2.0 0.15
+// 8.0 0.62
+// 10.0 0.77
+normalize(positiveData, normalizedData_l2, 1.0, 0.0, NORM_L2);
+// Norm to max element
+// 2.0 0.2 (2.0/10.0)
+// 8.0 0.8 (8.0/10.0)
+// 10.0 1.0 (10.0/10.0)
+normalize(positiveData, normalizedData_inf, 1.0, 0.0, NORM_INF);
+// Norm to range [0.0;1.0]
+// 2.0 0.0 (shift to left border)
+// 8.0 0.75 (6.0/8.0)
+// 10.0 1.0 (shift to right border)
+normalize(positiveData, normalizedData_minmax, 1.0, 0.0, NORM_MINMAX);
+Parameters
+src input array. 
+dst output array of the same size as src . 
+alpha norm value to normalize to or the lower range boundary in case of the range normalization.在范围归一化的情况下，要归一化到下限边界的标准值。 
+beta upper range boundary in case of the range normalization; it is not used for the norm normalization. 范围归一化的情况下的范围上限; 它不用于规范归一化。
+norm_type normalization type (see cv::NormTypes). 
+dtype when negative, the output array has the same type as src; otherwise, it has the same number of channels as src and the depth =CV_MAT_DEPTH(dtype). 
+mask optional operation mask. 
 

@@ -181,3 +181,41 @@ opencv_018:
 			int minradius,		//最小半径
 			int maxradius		//最大半径
 		)
+opencv_019:	
+	remap：像素重映射
+map_x.create(src.size(),CV_32FC1);
+map_y.create(src.size(),CV_32FC1);
+remap(src,dst,map_x,map_y,INTER_LINEAR,BORDER_CONSTANT,Scalar(0,255,0));
+// remap的映射表
+void update_map(){
+    for(int row=0;row<src.rows;row++){
+        for(int col=0;col<src.cols;col++){
+            switch (num) {
+            case 0:// 图像缩小为原来的二分之一，相当于降采样
+                if(col>=src.cols*0.25&&col<=src.cols*0.75&&row>=src.rows*0.25&&row<=src.rows*0.75){// 在显示窗口的中心显示缩小后的图片，没有没有被图像覆盖的地方用0覆盖
+                    // 保留偶数行和偶数列的像素
+			  // 映射表里的元素是该位置应该对应原图像中像素的位置
+                    map_x.at<float>(row,col) = 2*(col-src.cols*0.25);
+                    map_y.at<float>(row,col) = 2*(row-src.rows*0.25);
+                }else {
+                    map_x.at<float>(row,col) = 0;
+                    map_y.at<float>(row,col) = 0;
+                }
+                break;
+            case 1:// 图像关于y轴翻转
+                map_x.at<float>(row,col) = src.cols-col;
+                map_y.at<float>(row,col) = row;
+                break;
+            case 2:// 图像关于x轴翻转
+                map_x.at<float>(row,col) = col;
+                map_y.at<float>(row,col) = src.rows-row;
+                break;
+            case 3:// 图像关于xy轴翻转
+                map_x.at<float>(row,col) = src.cols-col;
+                map_y.at<float>(row,col) = src.rows-row;
+                break;
+            }
+        }
+    }
+}
+

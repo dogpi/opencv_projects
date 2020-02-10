@@ -305,6 +305,7 @@ beta upper range boundary in case of the range normalization; it is not used for
 norm_type normalization type (see cv::NormTypes). 
 dtype when negative, the output array has the same type as src; otherwise, it has the same number of channels as src and the depth =CV_MAT_DEPTH(dtype). 
 mask optional operation mask. 
+
 opencv_022:
 	直方图比较：
 		相关性比较（Correlation）
@@ -313,8 +314,8 @@ opencv_022:
 		Bhattacharyya distance（巴氏距离）
 	步骤：
       		a.先用cvtColor()把图像从RGB色彩空间转换到HSV色彩空间;
-        		b.计算图像的直方图，然后归一化到[0~1]之间，用到函数 calcHist() 和 normalize() ；
-        		c.使用上述的四种方法之一进行比较，用到函数compareHist()。
+        	b.计算图像的直方图，然后归一化到[0~1]之间，用到函数 calcHist() 和 normalize() ；
+        	c.使用上述的四种方法之一进行比较，用到函数compareHist()。
 opencv_023:
 	反射投影：
         原理：
@@ -366,16 +367,15 @@ opencv_025:
 	hierarchy向量内每一个元素的4个int型变量——hierarchy[i][0]~hierarchy[i][3]，分别表示第 i个轮廓的后一个轮廓、前一个轮廓、父轮廓、内嵌轮廓的索引编号。如果当前轮廓没有对应的后一个 轮廓、前一个轮廓、父轮廓或内嵌轮廓的话，则hierarchy[i][0] ~hierarchy[i][3]的相应位被设置为默认值-1。
 第四个参数：int型的mode，定义轮廓的检索模式：
 	取值一：CV_RETR_EXTERNAL只检测最外围轮廓，包含在外围轮廓内的内围轮廓被忽略
-	取值二：CV_RETR_LIST   检测所有的轮廓，包括内围、外围轮廓，但是检测到的轮廓不建立		等级关系，彼此之间独立，没有等级关系，这就意味着这个检索模式下不存在父轮廓或内		嵌轮廓，所以hierarchy向量内所有元素的第3、第4个分量都会被置为-1，具体下文会		讲到
-	取值三：CV_RETR_CCOMP  检测所有的轮廓，但所有轮廓只建立两个等级关系，外围为顶层，		若外围内的内围轮廓还包含了其他的轮廓信息，则内围内的所有轮廓均归属于顶层
-	取值四：CV_RETR_TREE， 检测所有轮廓，所有轮廓建立一个等级树结构。外层轮廓包含内		层轮廓，内层轮廓还可以继续包含内嵌轮廓。
+	取值二：CV_RETR_LIST   检测所有的轮廓，包括内围、外围轮廓，但是检测到的轮廓不建立等级关系，彼此之间独立，没有等级关系，这就意味着这个检索模式下不存在父轮廓或内嵌轮廓，所以hierarchy向量内所有元素的第3、第4个分量都会被置为-1，具体下文会讲到
+	取值三：CV_RETR_CCOMP  检测所有的轮廓，但所有轮廓只建立两个等级关系，外围为顶层，若外围内的内围轮廓还包含了其他的轮廓信息，则内围内的所有轮廓均归属于顶层
+	取值四：CV_RETR_TREE， 检测所有轮廓，所有轮廓建立一个等级树结构。外层轮廓包含内层轮廓，内层轮廓还可以继续包含内嵌轮廓。
 第五个参数：int型的method，定义轮廓的近似方法：
 	取值一：CV_CHAIN_APPROX_NONE 保存物体边界上所有连续的轮廓点到contours向量内
-	取值二：CV_CHAIN_APPROX_SIMPLE仅保存轮廓的拐点信息，把所有轮廓拐点处的点保		存入contours向量内，拐点与拐点之间直线段上的信息点不予保留
-	取值三和四：CV_CHAIN_APPROX_TC89_L1，CV_CHAIN_APPROX_TC89_KCOS使		用teh-Chinl chain 近似算法
-第六个参数：Point偏移量，所有的轮廓信息相对于原始图像对应点的偏移量，相当于在每一个检测出的		轮廓点上加上该偏移量，并且Point还可以是负值！
+	取值二：CV_CHAIN_APPROX_SIMPLE仅保存轮廓的拐点信息，把所有轮廓拐点处的点保存入contours向量内，拐点与拐点之间直线段上的信息点不予保留
+	取值三和四：CV_CHAIN_APPROX_TC89_L1，CV_CHAIN_APPROX_TC89_KCOS使用teh-Chinl chain 近似算法
+第六个参数：Point偏移量，所有的轮廓信息相对于原始图像对应点的偏移量，相当于在每一个检测出的轮廓点上加上该偏移量，并且Point还可以是负值！
 
-异同。
 	绘制轮廓
 	drawContours(
 		inputoutputArray binimg,

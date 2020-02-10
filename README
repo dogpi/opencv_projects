@@ -417,7 +417,9 @@ opencv_027:
 		2、发现轮廓
 		3、根据轮廓得到多边形apptoxPloyDP，圆minEnclosingCircle，矩形boundingRect
 		4、绘制多边形drawContours、绘制圆circle、绘制矩形retangle
-
+opencv_028:
+	图像矩：Monents，相当于求图像的重心
+	涉及api：moments、contourArea（计算轮廓面积）、arcLength（返回轮廓的周长）
 
 
 

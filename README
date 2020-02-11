@@ -421,6 +421,13 @@ opencv_028:
 	图像矩：Monents，相当于求图像的重心
 	涉及api：moments、contourArea（计算轮廓面积）、arcLength（返回轮廓的周长）
 
+opencv_029:
+	点多边形测试：测试一个点是在一个多边形的内部还是外部或者是在边上。
+	PointPolygonTest(
+		inputArray contour,//输入轮廓
+		Point2f pt,//测试点
+		bool measureDist//是否返回距离值，如果false，1表示在内部，0表示在边上，-1表示在外部，true返回实际距离
+	)
 
 
 

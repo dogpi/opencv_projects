@@ -428,6 +428,57 @@ opencv_029:
 		Point2f pt,//测试点
 		bool measureDist//是否返回距离值，如果false，1表示在内部，0表示在边上，-1表示在外部，true返回实际距离
 	)
+opencv_030:
+	基于距离变换与分水岭的图像分割：
+		图像分割：
+			图像分割是图像处理中最重要的处理手段之一；图像分割的目标是将图像中像素根据一定的规则分为若干（N）个cluster集合，每个集合包含一类像素；根据算法分为监督学习方法和无监督学习方法，图像分割的算法多数是无监督学习算法-KMeans。
+		距离变换：计算源图像每个像素到最近的零像素的距离。函数cv :: distanceTransform计算每个二进制图像像素到最近的零像素的近似或精确距离。 对于零图像像素，距离显然将为零。
+			void cv::distanceTransform 	( 	
+				InputArray  	src,	//输入的图像，一般为二值图像
+				OutputArray  	dst,	//输出的图像
+				OutputArray  	labels,
+				int  	distanceType,	//所用的求解距离的类型CV_DIST_L1,CV_DIST_L2, CV_DIST_C
+				int  	maskSize,	//距离变换掩模的大小，可以是 3 或 5. 对 CV_DIST_L1 或 CV_DIST_C 的情况，参数值被强制设定为 3, 因为 3×3 mask 给出 5×5 mask 一样的结果，而且速度还更快。
+				int  	labelType = DIST_LABEL_CCOMP 
+			) 	
+		分水岭变换：
+			void cv::watershed ( 	
+				InputArray  	image,
+				InputOutputArray  	markers 
+			) 	
+	处理流程：
+		1、将白色背景变为黑色
+		2、使用filter2D与拉普拉斯算子实现图像对比度提高
+		3、转为二值图像
+		4、距离变换
+		5、对距离变换结果进行归一化处理到[0-1]之间
+		6、使用阈值，再次二值化，得到标记
+		7、腐蚀得到的每个标记
+		8、发现轮廓
+		9、绘制轮廓
+		10、分水岭变换
+		11、对每个分割区域着色
+Mat::convertTo( 	
+	OutputArray  	m,//输出矩阵 如果操作前它的大小或类型不正确，则会对其进行重新分配。
+	int  	rtype,//所需的输出矩阵类型或深度，因为通道数与输入的数目相同； 如果rtype为负，则输出矩阵将具有与输入相同的类型。
+	double  	alpha = 1,
+	double  	beta = 0 
+)const
+
+void cv::filter2D 	( 	
+		InputArray  	src,
+		OutputArray  	dst,
+		int  	ddepth,	//输出图像的相关类型CV_8U/CV_16U/CV_16S/CV_32F/CV_64F/-1output image will have the same depth as the source.
+		InputArray  	kernel,
+		Point  	anchor = Point(-1,-1),
+		double  	delta = 0,
+		int  	borderType = BORDER_DEFAULT 
+	) 
+总结：watershed函数有两个参数，第一个参数是CV_8UC3的图片，第二个元素markers是可以标记不同区域的种子。根据这个种子可以区分不同的区域，所以我们就通过距离变换然后腐蚀操作得到能够代表每个区域的markers。markers会在watershed完成后作为输出，区域之间的边界值为-1。每个区域的值是markers种子轮廓的值。所以大多数的操作都是为了获得markers是。
+opencv_031:
+	使用distanceTransform找到图形的重心，见opencv_029	
+
+
 
 
 
@@ -447,3 +498,7 @@ Mat drawImage = Mat::zeros(canny_mat.size(),CV_8UC3);
     }
     imshow("result",drawImage);
 
+
+terminate called after throwing an instance of 'cv::Exception'
+  what():  OpenCV(4.2.0) /home/dogpi/Downloads/opencv-4.2.0/modules/highgui/src/precomp.hpp:137: error: (-215:Assertion failed) src_depth != CV_16F && src_depth != CV_32S in function 'convertToShow'
+显示的图像不能是CV_32S和CV_16F

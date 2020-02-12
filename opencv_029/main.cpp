@@ -74,6 +74,7 @@ int main(){
         }
     }
     circle(src, maxDistPt, (int)maxVal, Scalar(255,255,255));
+    circle(src, maxDistPt, (int)2, Scalar(255,255,255),2,LINE_AA);
     imshow("src",src);
     waitKey(0);
     return 0;

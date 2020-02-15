@@ -25,6 +25,7 @@ int main()
         rectangle(src,peoples[i],Scalar(0,0,255),2,8,0);
     }
 
+
     imshow("HOG SVM Detector Demo",src);
 
 

@@ -479,7 +479,330 @@ opencv_031:
 	使用distanceTransform找到图形的重心，见opencv_029	
 
 
+opencv_032:
+	角点检测：
+		角点检测是计算机视觉系统中用来获取图像特征的一种方法，广泛应用于运动检测、图像匹配、视频跟踪、三维建模和目标识别等领域中，也称为特征点检测。
+		角点通常是被定义为两条边的交点，更严格地说法是，角点的局部邻域应该具有两个不同区域的不同方向上的边界。而实际应用中，大多数所谓的角点检测方法检测的都是拥有特定特征的图像点，而不仅仅是“角点”。这些特征点在图像中有具体的坐标，并具有某些数学特征，如局部最大或最小灰度、某些梯度特征等。
+		另外，关于角点的具体描述可以有如下几种：
+		-一阶导数（即灰度的梯度）的局部最大所对应的像素的点
+		-两条及两条以上边缘的交点
+		-图像中梯度值和梯度方向的变化率都很高的点
+		-角点处的一阶导数最大，二阶导数为零，它指示了物体边缘变化不连续的方向。
+	Harris corner 角点检测：
+		harris角点检测是一种直接基于灰度图像的角点提取算法，稳定性高，尤其对L型角点检测精确度高。但由于采用了高斯滤波，运算速度相对较慢，角点信息有丢失和位置偏移的现象，而且角点提取有聚簇现象。
+opencv_033:
+	Shi-Tomasi 角点检测：
+		Shi-Tomasi是Harris的改进版。
+	void cv::goodFeaturesToTrack 	( 	
+		InputArray  	image,
+		OutputArray  	corners,//Output vector of detected corners. 
+		int  	            maxCorners,//最大角点数，如果该值小于角点数，就取最大的maxCorner个角点。maxCorner<=0 all corner are returned。
+		double  	qualityLevel,//该参数表征图像角的最低可接受质量。 参数值乘以最佳角质量度量，即最小特征值（请参见cornerMinEigenVal）或哈里斯函数响应（请参见cornerHarris）。 质量度量低于产品的角被拒绝。 例如，如果最佳角的质量量度= 1500，而qualityLevel = 0.01，则拒绝质量量度小于15的所有角。
+		double  	minDistance,//返回的角之间的最小可能欧几里得距离。
+		InputArray  	mask = noArray(),
+		int  	            blockSize = 3,
+		bool  	            useHarrisDetector = false,
+		double  	k = 0.04 
+	) 	
+	void cv::goodFeaturesToTrack 	( 	
+                               InputArray  	image,
+		OutputArray  	corners,
+		int  	            maxCorners,
+		double  	qualityLevel,
+		double  	minDistance,
+		InputArray  	mask,
+		int  	            blockSize,
+		int  	            gradientSize,
+		bool  	            useHarrisDetector = false,
+		double  	k = 0.04 
+	) 		
+	1、加载图像
+	2、转为灰度图像
+	3、角点检测 goodFeaturesToTrack
+	4、画出角点位置
+opencv_034:
+	自定义角点检测器：
+		-基于Harris与Shi-Tomasi角点检测
+		-首先通过计算矩阵M得到λ1λ2两个特征值，根据他们得到角点相应值
+		-然后自己设置阈值实现计算出阈值得到有效相应值的角点位置
+	API：
+	计算图像块的特征值和特征向量以进行角点检测。
+	void cv::cornerEigenValsAndVecs 	( 	
+		InputArray  		src,
+		OutputArray  	dst,//type CV_32FC(6)，每个位置有6个元素（λ1,λ2,x1,y1,x2,y2）,λ1λ2是特征值，x1y1是λ1的特征向量，x2y2是λ2的特征向量
+		int  			blockSize,
+		int  			ksize,
+		int  			borderType = BORDER_DEFAULT 
+	) 	
+	计算用于角点检测的梯度矩阵的最小特征值。Tomasi不需要最大特征向量可以使用该函数计算最小特征向量。
+	void cv::cornerMinEigenVal 	( 	
+		InputArray  	src,
+		OutputArray  	dst,
+		int  	blockSize,
+		int  	ksize = 3,
+		int  	borderType = BORDER_DEFAULT 
+	) 	
+	步骤：
+		1、加载图像
+		2、转为灰度图像
+		3、计算特征值特征向量
+		4、根据特征值特征向量计算响应值（计算方法可以自定义，也可以使用karris或Shi-Tomasi的计算方法）
+		5、标记角点位置
 
+	Harris：响应计算公式dst(x,y)=detM(x,y)−k⋅(trM(x,y))2
+opencv_035:
+	亚像素级角点检测：
+		如果我们进行图像处理的目的不是提取用于识别的特征点，而是进行集合测量，这通常需要更高的精度，而函数goodFeaturesToTrack()只能提供简单的像素的坐标值，也就是说，有时候会需要实数坐标值而不是整数坐标值。
+		亚像素级角点检测的位置在摄像机标定、跟踪并重建摄像机的轨迹，或者重建被跟踪目标的三维结构时，是一个基本的测量值。
+	寻找亚像素角点：cornerSubPix()函数
+	void cornerSubPix(
+		InputOutputArray image,//输入图像
+		InputOutputArray corners,// 提供输入角点的初始坐标和精确的输出坐标
+		Size winSize,// 搜索窗口的一半尺寸，若winSize=Siz(5,5)，那么表示使用(5*2+1)*(5*2_1)=11*11大小的搜索窗口
+		Size zeroZone,// 表示死区的一半尺寸。死区为不对搜索区的中央位置做求和运算的区域，用来避免自相关矩阵出现的某些可能的奇异性。值为(-1,-1)表示没有死区。
+		TermCriteria criteria	//  求角点的迭代过程的中值条件。即角点位置的确定，哟啊么迭代数大于某个设定值，或者是精确度达到某个设定值。 criteria可以是最大迭代数目，或者是设定的精确度，也可以是它们的组合。
+	)
+opencv_036:
+	特征点检测
+	SURF算法工作原理：
+		1、选择图像中的POI（Points of interest）Hessian Matrix
+		2、在不同的尺度空间发现关键点，非最大信号压制
+		3、发现特征点方法、旋转不变性要求
+		4、生成特征向量
+	API：
+		使用cv :: FeatureDetector接口来查找兴趣点。
+		特别：使用cv :: xfeatures2d :: SURF及其函数
+		cv :: xfeatures2d :: SURF :: detect来执行检测过程使用函数
+		cv :: drawKeypoints绘制检测到的关键点
+
+	cv::xfeatures2d::SURF::create(
+		double  	hessianThreshold = 100,//SURF中使用的Hessian关键点检测器的阈值。
+		int	  	nOctaves = 4,	//表示在四个尺度空间
+		int	  	nOctaveLayers = 3,// 表示每个尺度空间的层数
+		bool	  	extended = false,
+		bool	  	upright = false 
+	)
+	
+	void drawKeypoints( const Mat& image,
+　　　 		const vector<KeyPoint>& keypoints,
+　　　		CV_OUT Mat& outImage,
+　　　　　　	const Scalar& color=Scalar::all(-1),
+　　　　　　	int flags=DrawMatchesFlags::DEFAULT
+	);
+	第一个参数image：原始图像，可以使三通道或单通道图像；
+	第二个参数keypoints：特征点向量，向量内每一个元素是一个KeyPoint对象，包含了特征点的各种属性信息；
+	第三个参数outImage：特征点绘制的画布图像，可以是原图像；
+	第四个参数color：绘制的特征点的颜色信息，默认绘制的是随机彩色；
+	第五个参数flags：特征点的绘制模式，其实就是设置特征点的那些信息需要绘制，那些不需要绘制，有以下几种模式可选：
+　　	DEFAULT：只绘制特征点的坐标点,显示在图像上就是一个个小圆点,每个小圆点的圆心坐标都是特征点的坐标。
+　　	DRAW_OVER_OUTIMG：函数不创建输出的图像,而是直接在输出图像变量空间绘制,要求本身输出图像变量就是一个初始化好了的,size与type都是已经初始化好的变量
+　　	NOT_DRAW_SINGLE_POINTS：单点的特征点不被绘制
+　　	DRAW_RICH_KEYPOINTS：绘制特征点的时候绘制的是一个个带有方向的圆,这种方法同时显示图像的坐标,size，和方向,是最能显示特征信息的一种绘制方式。
+
+opencv_037:
+	SIFT特征检测：尺度不变特征变换。https://baike.baidu.com/item/SIFT/1396275#3
+	SIFT特征检测关键特性：
+		1、建立尺度空间，寻找极值
+		2、关键点定位（寻找关键点准确位置与删除弱边缘）
+		3、关键点方向指定
+		4、关键点描述子
+	cv::xfeature2d::SIFT::create(
+		int  nfeatures = 0,
+     		int  nOctaveLayers = 3,    --高斯金字塔乘积数
+    		double contrastThreshold = 0.04,    --对比度
+    		double edgeThreshold = 10,   --边缘阈值，一般默认10就行
+     		double sigma = 1.6      
+	)
+
+
+opencv_038:
+	HOG特征检测：通过计算局部区域的梯度方向直方图来构成特征。
+		1、灰度图像转换
+		2、梯度计算
+		3、分网格的梯度方向直方图
+		4、块描述子
+		5、块描述子归一化
+		6、特征数据与检测窗口
+		7、匹配方法
+	优点：
+		(1)HOG表示的是边缘(梯度)的结构特征，因此可以描述局部的形状信息；
+		(2)位置和方向空间的量化一定程度上可以抑制平移和旋转带来的影响；
+		(3)采取在局部区域归一化直方图，可以部分抵消光照变化带来的影响；
+		(4)由于一定程度忽略了光照颜色对图像造成的影响，使得图像所需要的表征数据的维度降低了；
+		(5)而且由于这种分块分单元的处理方法，也使得图像局部像素点之间的关系可以很好得到表征。
+	缺点：
+		(1)描述子生成过程冗长，导致速度慢，实时性差；
+		(2)很难处理遮挡问题；
+		(3)由于梯度的性质，该描述子对噪点相当敏感。
+
+	HOG和SIFT都是描述子，以及由于在具体操作上有很多相似的步骤，所以致使很多人误认为HOG是SIFT的一种，其实两者在使用目的和具体处理细节上是有很大的区别的。HOG与SIFT的主要区别如下：
+	(1)SIFT是基于关键点特征向量的描述。
+	(2)HOG是将图像均匀的分成相邻的小块，然后在所有的小块内统计梯度直方图。
+	(3)SIFT需要对图像尺度空间下对像素求极值点，而HOG中不需要。
+	(4)SIFT一般有两大步骤，第一个步骤对图像提取特征点，而HOG不会对图像提取特征点。
+
+	cv::HOGDescriptor::HOGDescriptor 	( 	
+		Size  	_winSize,//窗口大小
+		Size  	_blockSize,//块大小 每个块中有blockSize×blockSize个cell
+		Size  	_blockStride,//块步长
+		Size  	_cellSize,//图像分割成每个大小为cellSize的块
+		int  	_nbins,//把-180~180分为nbins个区域
+		int  	_derivAperture = 1,
+		double  	_winSigma = -1,
+		HOGDescriptor::HistogramNormType  	_histogramNormType = HOGDescriptor::L2Hys,
+		double  	_L2HysThreshold = 0.2,
+		bool  	_gammaCorrection = false,
+		int  	_nlevels = HOGDescriptor::DEFAULT_NLEVELS,
+		bool  	_signedGradient = false 
+	) 	
+	HOGDescriptor(
+		 Size _winSize, ---：窗口大小，即检测的范围大小，前面的64*128
+　　　　　　　Size _blockSize,--- 前面的2*2的cell，即cell的数量，这里要填像素值Size(16,16)
+　　　　　　　Size _blockStride,---每次block移动的步长，以像素计，为一个cell像素块大小
+             		 Size _cellSize, ---cell的大小，前面的8*8
+　　　　　　　int _nbins,     ----直方图的组数
+ 　　　　　　 	int _derivAperture=1, --梯度计算的参数
+　　　　　　	double _winSigma=-1, --梯度计算的参数
+              		int _histogramNormType=HOGDescriptor::L2Hys,---归一化的方法
+              		double _L2HysThreshold=0.2,  
+　　　　　　	bool _gammaCorrection=false,    ---是否要伽马校正
+               		int _nlevels=HOGDescriptor::DEFAULT_NLEVELS, 
+　　　　　　	bool _signedGradient=false
+	)
+	64*128像素的图片，cell大小为8*8，可以分为8*16个cell。步长为一个cell也就是8pix，块大小为2*2cell，可以分为7*15个块，9个bins。
+	每个块有2*2个cell，有2*2个向量，7*15个块就有2*2*7*15个向量，又分9个bins，共有2*2*7*15*9=3780个向量。
+opencv_039:
+	HOG与行人检测
+	
+opencv_040:
+	LBP(Local Binary Pattern，局部二值模式):
+	原始的LBP算子定义为3*3，以邻域中心像素为阈值，相邻大8个像素的灰度值与邻域中心的像素值进行比较，若大于中心像素则该像素点的位置被标记为1，否则为0。这样3*3的邻域内可以产生8个值为0或1的数，将这8个数依次排列成一个二进制数字，这个二进制数就是中心像素的LBP值，LBP值共有28种可能，因此LBP值可以取0-255，也就是256种。
+	44, 118,192			0,  1, 1
+	32,   83,204 		--->	0,    , 1
+	61, 174,250			0,  1, 1
+	(01111100)10=124
+    //转为灰度图像
+    Mat gray_src;
+    cvtColor(src,gray_src,COLOR_BGR2GRAY);
+    Mat dst(Size(src.cols-2,src.rows-2),CV_8U);
+    //计算LBP
+    for(int row=1;row<gray_src.rows;row++){
+        for(int col=0;col<gray_src.cols;col++){
+            uchar center = gray_src.at<uchar>(row,col);
+            //由于计算后的值在0-255之间，所以要使用uchar来保存最为合适
+            uchar lbpcode = 0;
+            lbpcode|=(gray_src.at<uchar>(row-1,col-1)>center)<<7;
+            lbpcode|=(gray_src.at<uchar>(row-1,col)>center)<<6;
+            lbpcode|=(gray_src.at<uchar>(row-1,col+1)>center)<<5;
+            lbpcode|=(gray_src.at<uchar>(row,col+1)>center)<<4;
+            lbpcode|=(gray_src.at<uchar>(row+1,col+1)>center)<<3;
+            lbpcode|=(gray_src.at<uchar>(row+1,col)>center)<<2;
+            lbpcode|=(gray_src.at<uchar>(row+1,col-1)>center)<<1;
+            lbpcode|=(gray_src.at<uchar>(row,col-1)>center)<<0;
+            // 不要直接把值赋值给gray_src，会影响下一次循环的值。
+            // gray_src.at<uchar>(row,col) = lbpcode;
+            dst.at<uchar>(row,col) = lbpcode;
+        }
+    }
+OpenCV在这部分里包含一些类似标准c++、c里面的一些东西。
+实用函数很接近<math.h>里的一些函数，很有意思，可以方便大家开发，有
+计算向量角度的函数fastAtan2、
+计算立方根的函数cubeRoot、
+向上取整函数cvCeil、
+向下取整函数cvFloor、
+四舍五入函数cvRound。
+注意cvCeil、cvFloor、cvRound和大家常用的ceil、floor、round函数略有不同，标准库函数返回值并不是int型的变量，必要时需强制转换，而OpenCV里面的取整函数返回值为int型。
+
+双线性插值实现LBP
+//对每个像素进行处理
+    for(int row=radius_value;row<src.rows-2*radius_value;row++){
+        for(int col=radius_value;col<src.cols-2*radius_value;col++){
+
+            uchar center = gray_src.at<uchar>(row,col);
+            uchar lbpcode=0;
+            // 取8个点
+            // 计算8个点的坐标
+            for(int k=0;k<neighbors;k++){
+                float x = row+static_cast<float>(radius_value*cos(2.0*CV_PI*k/neighbors));
+                float y = col-static_cast<float>(radius_value*sin(2.0*CV_PI*k/neighbors));
+
+                // 由于不是整数，要对取到的点进行双线性插值计算，取像素值
+                // 要使用双线性插值计算就要得带点周围的4个整值点，也就是图像中真是存在的点
+                // 对取到的点进行取整即可
+                int x1 = static_cast<int>(floor(x));
+                int x2 = static_cast<int>(ceil(x));
+                int y1 = static_cast<int>(floor(y));
+                int y2 = static_cast<int>(ceil(y));
+
+                // 计算四个点(x1,y1),(x1,y2),(x2,y1),(x2,y2)的权重
+                // 将坐标映射到0-1之间，不使用四个点直接计算权重是因为如果四个点相同，计算得带的权重就会是0，插值也会为0
+                float tx = x-x1;
+                float ty = y-y1;
+
+                float w1 = (1-tx)*(1-ty);
+                float w2 = tx*(1-ty);
+                float w3 = (1-tx)*ty;
+                float w4 = tx*ty;
+
+                // 计算出8个点中一个的像素值
+                float value = gray_src.at<uchar>(x1,y1)*w1+
+                              gray_src.at<uchar>(x1,y2)*w2+
+                              gray_src.at<uchar>(x2,y1)*w3+
+                              gray_src.at<uchar>(x2,y2)*w4;
+                lbpcode |=(value>center)<<(neighbors-k-1);
+            }
+            dst.at<uchar>(row-radius_value,col-radius_value) = lbpcode;
+        }
+    }
+opencv_041:
+	特征描述子与匹配：
+		1、使用SURF发现关键件并计算特征描述子
+		2、使用暴力匹配算法进行匹配
+opencv_042:
+	FLANN特征匹配：快速最邻逼近搜索
+
+void cv::drawMatches	(	
+	InputArray 	img1,
+	const std::vector< KeyPoint > & 	keypoints1,
+	InputArray 	img2,
+	const std::vector< KeyPoint > & 	keypoints2,
+	const std::vector< DMatch > & 	matches1to2,
+	InputOutputArray 	outImg,
+	const Scalar & 	matchColor = Scalar::all(-1),
+	const Scalar & 	singlePointColor = Scalar::all(-1),
+	const std::vector< char > & 	matchesMask = std::vector< char >(),
+	DrawMatchesFlags 	flags = DrawMatchesFlags::DEFAULT 
+)	
+DrawMatchesFlags
+Enumerator
+DEFAULT 	
+Output image matrix will be created (Mat::create), i.e. existing memory of output image may be reused. Two source image, matches and single keypoints will be drawn. For each keypoint only the center point will be drawn (without the circle around keypoint with keypoint size and orientation).
+
+DRAW_OVER_OUTIMG 	
+Output image matrix will not be created (Mat::create). Matches will be drawn on existing content of output image.
+
+NOT_DRAW_SINGLE_POINTS 	
+Single keypoints will not be drawn.
+
+DRAW_RICH_KEYPOINTS 	
+For each keypoint the circle around keypoint with keypoint size and orientation will be drawn.
+opencv_043:
+	平面图像识别：
+		接着上个实例继续改进
+		findHomography---找到匹配关键点之间的变换
+		perspectiveTransform---映射点
+
+opencv_044:
+		AKAZE特征检测：
+opencv_045:
+		Brisk特征检测：
+opencv_046:
+		层叠分类器（级联分类器）：
+			CascadeClassifier对象；
+opencv_047:
+		Kmeans聚类方法：该算法是无监督聚类算法，它实现起来比较简单，聚类效果也不错，因此应用很广泛，
+		原理：
+			对于给定的样本集，按照样本之间的距离大小，将样本集划分为K个簇。让簇内的点尽量紧密的连在一起，而让簇间的距离尽量的大。
 
 
 

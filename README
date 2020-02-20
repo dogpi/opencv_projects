@@ -803,7 +803,18 @@ opencv_047:
 		Kmeans聚类方法：该算法是无监督聚类算法，它实现起来比较简单，聚类效果也不错，因此应用很广泛，
 		原理：
 			对于给定的样本集，按照样本之间的距离大小，将样本集划分为K个簇。让簇内的点尽量紧密的连在一起，而让簇间的距离尽量的大。
-
+opencv_048:
+	Kmeans分割图像（背景为纯色）
+opencv_049:
+	高斯混合模型（GMM）：
+		
+opencv_050:
+	GMM图像分割：
+opencv_051:
+	GrabCut：GrabCut是一种基于图割的图像分割方法。
+该算法从用户指定的包围盒开始，利用高斯混合模型估计目标和背景的颜色分布。它用于在像素标签上构造马尔可夫随机场，能量函数优先选择具有相同标签的连接区域，并运行基于图割的优化来推断其值。由于此估计可能比从边界框中获取的原始估计更精确，因此重复此两步过程直到收敛。
+用户可以通过指出错误的分类区域并重新运行优化来进一步修正估计。该方法还修正结果以保留边缘。
+有几种开源实现可供使用，包括OpenCV（从2.1版开始）。
 
 
 Exception:
@@ -825,3 +836,10 @@ Mat drawImage = Mat::zeros(canny_mat.size(),CV_8UC3);
 terminate called after throwing an instance of 'cv::Exception'
   what():  OpenCV(4.2.0) /home/dogpi/Downloads/opencv-4.2.0/modules/highgui/src/precomp.hpp:137: error: (-215:Assertion failed) src_depth != CV_16F && src_depth != CV_32S in function 'convertToShow'
 显示的图像不能是CV_32S和CV_16F
+
+terminate called after throwing an instance of 'cv::Exception'
+  what():  OpenCV(4.2.0) /home/dogpi/Downloads/opencv-4.2.0/opencv_contrib-4.2.0/modules/xfeatures2d/src/surf.cpp:1029: error: (-213:The function/feature is not implemented) This algorithm is patented and is excluded in this configuration; Set OPENCV_ENABLE_NONFREE CMake option and rebuild the library in function 'create'
+原因：缺少OPENCV_ENABLE_NONFREE 模块
+在opencv的根目录下找到CMakeList.txt文件，修改OCV_OPTION(OPENCV_ENABLE_NONFREE "Enable non-free algorithms" OFF)为
+OCV_OPTION(OPENCV_ENABLE_NONFREE "Enable non-free algorithms" ON)，然后重新编译即可
+
